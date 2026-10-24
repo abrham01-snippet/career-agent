@@ -2,6 +2,10 @@ const express = require('express');
 require('dotenv').config();
 const asyncHandler = require('./src/utils/asyncHandler');
 
+// Import Routes
+const matchRoutes = require('./src/routes/match');
+const planRoutes = require('./src/routes/plan');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -49,6 +53,10 @@ app.get('/api/health', asyncHandler(async (req, res) => {
   });
 }));
 
+// Register Feature Routes
+app.use('/api/opportunities', matchRoutes);
+app.use('/api', planRoutes);
+
 // Generic 404 handler for unmapped routes
 app.use((req, res) => {
   res.status(404).json({
@@ -79,4 +87,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-
