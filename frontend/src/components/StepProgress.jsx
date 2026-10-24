@@ -11,7 +11,7 @@ const STEPS = [
 
 export default function StepProgress({ currentStep, onSelectStep }) {
   return (
-    <div className="bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-1.5 sm:p-2 shadow-2xs">
+    <div className="max-w-3xl mx-auto bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-1 sm:p-1.5 shadow-2xs">
       <div className="flex items-center justify-between text-xs font-semibold overflow-x-auto gap-1.5 sm:gap-2">
         {STEPS.map((s, idx) => {
           const isActive = currentStep === s.num;

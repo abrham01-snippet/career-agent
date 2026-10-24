@@ -5,13 +5,11 @@ import SkillCard from '../components/SkillCard.jsx';
 import OpportunityCard from '../components/OpportunityCard.jsx';
 import FilterBar from '../components/FilterBar.jsx';
 import WhyItFits from '../components/WhyItFits.jsx';
-import ResourceCard from '../components/ResourceCard.jsx';
 import PlanDayRow from '../components/PlanDayRow.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 import ChatPanel from '../components/ChatPanel.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import {
-  RESOURCES,
   ALLOWED_SKILLS,
   INITIAL_SKILLS
 } from '../data/mock.js';
@@ -223,8 +221,8 @@ export default function AppFlow({ state }) {
       </header>
 
       {/* 5-Step Progress Bar - Placed Below Header */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-colors py-2.5 px-4 sm:px-6 shadow-2xs">
-        <div className="max-w-7xl mx-auto">
+      <div className="sticky top-16 z-30 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors py-2 px-4 sm:px-6 shadow-2xs">
+        <div className="max-w-3xl mx-auto">
           <StepProgress currentStep={step} onSelectStep={(s) => setStep(s)} />
         </div>
       </div>
@@ -241,9 +239,7 @@ export default function AppFlow({ state }) {
               <div className="space-y-1.5">
                 <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Step 1 of 5</span>
                 <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Upload or paste your CV</h2>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Provide your resume to extract verified skills and calculate match scores for student roles. 100% private, processed in-browser.
-                </p>
+              
               </div>
 
               {/* Segmented Mode Selector: Upload File vs Paste Text */}
@@ -521,33 +517,10 @@ export default function AppFlow({ state }) {
               </form>
             )}
 
-            {/* TWO COLUMNS: LEFT SKILLS vs RIGHT MATCHING OPPORTUNITIES */}
+            {/* TWO COLUMNS: LEFT (JOBS) vs RIGHT (SKILLS) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* LEFT: Your skills */}
-              <div className="lg:col-span-5 space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-                  <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                    Your Skills ({skills.filter(s => !s.removed).length} active)
-                  </span>
-                  <span>Click level to tune</span>
-                </div>
-
-                <div className="space-y-2.5">
-                  {skills.map((skill) => (
-                    <SkillCard
-                      key={skill.id}
-                      skill={skill}
-                      isHighlighted={highlightedSkillId === skill.id}
-                      onLevelChange={updateSkillLevel}
-                      onRemove={removeSkill}
-                      onRestore={restoreSkill}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* RIGHT: Matching opportunities */}
-              <div className="lg:col-span-7 space-y-3">
+              {/* LEFT (FIRST): Matching opportunities (col-span-8) */}
+              <div className="lg:col-span-8 space-y-3">
                 <FilterBar
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -593,6 +566,29 @@ export default function AppFlow({ state }) {
                       />
                     ))
                   )}
+                </div>
+              </div>
+
+              {/* RIGHT (NEXT TO IT): Your skills (col-span-4, narrower) */}
+              <div className="lg:col-span-4 space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+                  <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                    Your Skills ({skills.filter(s => !s.removed).length} active)
+                  </span>
+                  <span>Click level to tune</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {skills.map((skill) => (
+                    <SkillCard
+                      key={skill.id}
+                      skill={skill}
+                      isHighlighted={highlightedSkillId === skill.id}
+                      onLevelChange={updateSkillLevel}
+                      onRemove={removeSkill}
+                      onRestore={restoreSkill}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -700,62 +696,44 @@ export default function AppFlow({ state }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-              {/* Left list of ResourceCards & Figma Uncovered Card */}
-              <div className="md:col-span-5 space-y-3">
-                <div className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Catalog Resources
-                </div>
-
-                <div className="space-y-2.5">
-                  {RESOURCES.map((r) => (
-                    <ResourceCard key={r.id} resource={r} />
-                  ))}
-
-                  {/* Gray 'No resource available yet for Figma' card */}
-                  <ResourceCard isUncovered={true} uncoveredSkill="Figma" />
-                </div>
+            {/* Day 1 to Day 7 Timeline (Catalog Resources removed) */}
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">Timeline (Day 1 - Day 7)</span>
+                <span className="font-mono tabular-nums text-indigo-700 dark:text-indigo-400 font-semibold">
+                  Total: {activePlan.tasks.reduce((sum, t) => sum + t.minutes, 0)} minutes
+                </span>
               </div>
 
-              {/* Right Day 1 to Day 7 Timeline */}
-              <div className="md:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 text-xs text-slate-500 font-medium">
-                  <span className="font-bold text-slate-800">Timeline (Day 1 - Day 7)</span>
-                  <span className="font-mono tabular-nums text-indigo-700 font-semibold">
-                    Total: {activePlan.tasks.reduce((sum, t) => sum + t.minutes, 0)} minutes
-                  </span>
-                </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                {activePlan.tasks.map((task) => (
+                  <PlanDayRow
+                    key={task.day}
+                    task={task}
+                    onUpdateTask={updateActivePlanTask}
+                  />
+                ))}
+              </div>
 
-                <div className="divide-y divide-slate-100">
-                  {activePlan.tasks.map((task) => (
-                    <PlanDayRow
-                      key={task.day}
-                      task={task}
-                      onUpdateTask={updateActivePlanTask}
-                    />
-                  ))}
-                </div>
+              {/* Bottom Bar: Ask AI to adjust & Confirm and save */}
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setChatOpen(true)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Ask AI to adjust</span>
+                </button>
 
-                {/* Bottom Bar: Ask AI to adjust & Confirm and save */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setChatOpen(true)}
-                    className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Ask AI to adjust</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmModalOpen(true)}
-                    className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5"
-                  >
-                    <span>Confirm and save</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmModalOpen(true)}
+                  className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Confirm and save</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
