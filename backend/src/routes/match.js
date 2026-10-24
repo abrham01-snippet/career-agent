@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const asyncHandler = require('../utils/asyncHandler');
 const { searchAndScoreOpportunities } = require('../ai/tools');
-const { generateContent } = require('../ai/client');
-const db = require('../db');
+const db = require('../db/index.js');
 
 // POST /api/opportunities/rank - Pure JS scoring (No LLM)
 router.post('/rank', asyncHandler(async (req, res) => {
