@@ -92,8 +92,10 @@ export async function askValidated({ system, user, validate }) {
     const retryResult = await askJson({ system, user: retryUser });
     return validate(retryResult);
   } catch (secondError) {
+    const firstDetail = firstError.cause ? `${firstError.message} (${firstError.cause.message || firstError.cause.code || firstError.cause})` : firstError.message;
+    const secondDetail = secondError.cause ? `${secondError.message} (${secondError.cause.message || secondError.cause.code || secondError.cause})` : secondError.message;
     throw new Error(
-      `Model validation failed after retry. Initial error: "${firstError.message}". Second error: "${secondError.message}".`
+      `Model validation failed after retry. Initial error: "${firstDetail}". Second error: "${secondDetail}".`
     );
   }
 }
