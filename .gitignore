@@ -1,6 +1,21 @@
 node_modules/
 .env
 **/.env
+*.log HEAD
+node_modules/
+.env
+**/.env
 *.log
 dist/
 .DS_Store
+=======
+backend/node_modules/
+backend/.env
+backend/.env.local
+node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+
+>>>>>>> eb05a6c (feat(backend): implement M1 and M2 scoring, verifier, and offline test suite)
