@@ -13,6 +13,7 @@ import {
   ALLOWED_SKILLS,
   INITIAL_SKILLS
 } from '../data/mock.js';
+import { confirmProfile } from '../api/client.js';
 import {
   Sparkles,
   ArrowRight,
@@ -20,6 +21,7 @@ import {
   Plus,
   CheckCircle2,
   Calendar,
+  Download,
   RotateCcw,
   Check,
   Copy,
@@ -90,25 +92,63 @@ export default function AppFlow({ state }) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
 
+  const handleExportPlan = (planDays) => {
+    const markdown = [
+      '# My Career Plan',
+      '',
+      ...planDays.flatMap((day, index) => {
+        const dayNumber = day.day ?? index + 1;
+        const hasTaskList = Array.isArray(day.tasks);
+        const heading = hasTaskList && day.title
+          ? `## Day ${dayNumber}: ${day.title}`
+          : `## Day ${dayNumber}`;
+        const tasks = hasTaskList ? day.tasks : (day.title ? [day.title] : []);
+        const taskLines = tasks
+          .map((task) => typeof task === 'string' ? task : task.title)
+          .filter(Boolean)
+          .map((task) => `- ${task}`);
+
+        return [heading, ...taskLines, ''];
+      })
+    ].join('\n');
+    const file = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const downloadUrl = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'My_Career_Plan.md';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+  };
+
   // File upload reader
   const handleFileProcess = (file) => {
     if (!file) return;
-    if (setUploadedFile) {
-      setUploadedFile({
-        name: file.name,
-        size: (file.size / 1024).toFixed(1) + ' KB',
-        type: file.type || 'Document'
-      });
-    }
 
-    const reader = new FileReader();
+    // Read as DataURL (base64) so Google Gemini can read PDFs natively
+    const b64Reader = new FileReader();
+    b64Reader.onload = (e) => {
+      if (setUploadedFile) {
+        setUploadedFile({
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'Document',
+          base64: e.target?.result
+        });
+      }
+    };
+    b64Reader.readAsDataURL(file);
+
+    // Read as text
+    const textReader = new FileReader();
     if (file.name.endsWith('.txt') || file.type.includes('text')) {
-      reader.onload = (e) => {
+      textReader.onload = (e) => {
         setCvText(e.target?.result || '');
       };
-      reader.readAsText(file);
+      textReader.readAsText(file);
     } else {
-      reader.onload = (e) => {
+      textReader.onload = (e) => {
         const raw = e.target?.result;
         if (typeof raw === 'string') {
           setCvText(raw);
@@ -125,7 +165,7 @@ export default function AppFlow({ state }) {
           setCvText(cleaned.length > 20 ? cleaned : `Resume document: ${file.name}`);
         }
       };
-      reader.readAsArrayBuffer(file);
+      textReader.readAsArrayBuffer(file);
     }
   };
 
@@ -148,15 +188,16 @@ export default function AppFlow({ state }) {
   };
 
   // Extract skills and transition to Step 2
-  const handleExtractCv = () => {
+  const handleExtractCv = async () => {
     setIsExtracting(true);
-    setTimeout(() => {
+    try {
       if (extractSkillsFromCurrentCv) {
-        extractSkillsFromCurrentCv(cvText);
+        await extractSkillsFromCurrentCv(cvText, uploadedFile?.base64);
       }
+    } finally {
       setIsExtracting(false);
       setStep(2);
-    }, 1200);
+    }
   };
 
   // Add skill submit
@@ -181,17 +222,17 @@ export default function AppFlow({ state }) {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Bar with Logo and My Plans */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs group-hover:bg-indigo-700 transition-colors">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-slate-900 leading-none block">CareerPath</span>
-              <span className="text-[10px] font-semibold uppercase text-indigo-600 tracking-wider">Guidance Only</span>
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none block">CareerPath</span>
+              <span className="text-[10px] font-semibold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Guidance Only</span>
             </div>
           </Link>
 
@@ -602,8 +643,11 @@ export default function AppFlow({ state }) {
 
                 <button
                   type="button"
-                  onClick={() => setStep(3)}
-                  className="px-6 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  onClick={() => {
+                    confirmProfile(skills);
+                    setStep(3);
+                  }}
+                  className="px-6 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
                 >
                   <span>Confirm profile and continue</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -633,6 +677,7 @@ export default function AppFlow({ state }) {
                   key={opp.id}
                   opportunity={opp}
                   rank={idx + 1}
+                  skills={skills}
                   onBuildPlan={() => {
                     setSelectedOppId(opp.id);
                     setStep(4);
@@ -700,9 +745,19 @@ export default function AppFlow({ state }) {
             <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 font-medium">
                 <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">Timeline (Day 1 - Day 7)</span>
-                <span className="font-mono tabular-nums text-indigo-700 dark:text-indigo-400 font-semibold">
-                  Total: {activePlan.tasks.reduce((sum, t) => sum + t.minutes, 0)} minutes
-                </span>
+                <div className="flex items-center gap-4">
+                  <span className="font-mono tabular-nums text-indigo-700 dark:text-indigo-400 font-semibold">
+                    Total: {activePlan.tasks.reduce((sum, t) => sum + t.minutes, 0)} minutes
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleExportPlan(activePlan.tasks)}
+                    className="inline-flex items-center gap-1.5 text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-semibold"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Export plan
+                  </button>
+                </div>
               </div>
 
               <div className="divide-y divide-slate-100 dark:divide-slate-800/80">

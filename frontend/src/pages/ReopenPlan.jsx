@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProgressBar from '../components/ProgressBar.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
+import { getPlan } from '../api/client.js';
 import {
   Sparkles,
   ArrowRight,
@@ -20,15 +21,23 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
   const [activePlanId, setActivePlanId] = useState('PLAN-1001');
   const [hasSearched, setHasSearched] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [fetchedRemotePlan, setFetchedRemotePlan] = useState(null);
 
-  // Loaded plan object
-  const currentPlan = savedPlans ? savedPlans[activePlanId.trim().toUpperCase()] : null;
+  // Loaded plan object (local memory or remote API)
+  const currentPlan = (savedPlans && savedPlans[activePlanId.trim().toUpperCase()]) || fetchedRemotePlan;
 
-  const handleOpen = (e) => {
+  const handleOpen = async (e) => {
     if (e) e.preventDefault();
     const clean = inputPlanId.trim().toUpperCase();
     setActivePlanId(clean);
     setHasSearched(true);
+
+    if (!savedPlans || !savedPlans[clean]) {
+      try {
+        const remote = await getPlan(clean);
+        if (remote) setFetchedRemotePlan(remote);
+      } catch {}
+    }
   };
 
   const handleSelectQuick = (id) => {
@@ -42,15 +51,15 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
   const completedTasks = currentPlan ? currentPlan.tasks.filter(t => t.done && !t.isRest) : [];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
           <Link to="/" className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs group-hover:bg-indigo-700 transition-colors">
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900">CareerPath</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">CareerPath</span>
           </Link>
 
           <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
@@ -149,7 +158,7 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                   className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Print</span>
+                  <span>Export</span>
                 </button>
 
                 <button
