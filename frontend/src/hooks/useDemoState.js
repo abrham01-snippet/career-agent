@@ -7,6 +7,15 @@ import {
   OPPORTUNITIES,
   extractSkillsFromCv
 } from '../data/mock.js';
+import {
+  extractCv,
+  correctProfile,
+  setProfileSkills,
+  confirmProfile,
+  savePlan,
+  updateActivityStatus,
+  getDemoCv
+} from '../api/client.js';
 
 const STORAGE_KEY_PLANS = 'careerpath_saved_plans_v2';
 const STORAGE_KEY_SKILLS = 'careerpath_user_skills_v2';
@@ -202,10 +211,18 @@ export function useDemoState() {
     triggerSkillUpdate(next, targetId);
   };
 
-  const extractSkillsFromCurrentCv = (textToUse) => {
+  const extractSkillsFromCurrentCv = async (textToUse, pdfBase64 = null) => {
     const content = textToUse !== undefined ? textToUse : cvText;
-    const extracted = extractSkillsFromCv(content);
-    triggerSkillUpdate(extracted);
+    setIsExtracting(true);
+    try {
+      const extracted = await extractCv(content, pdfBase64);
+      triggerSkillUpdate(extracted);
+    } catch {
+      const localExtracted = extractSkillsFromCv(content);
+      triggerSkillUpdate(localExtracted);
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const clearCv = () => {
@@ -213,12 +230,17 @@ export function useDemoState() {
     setUploadedFile(null);
   };
 
-  const resetToDemo = () => {
-    clearCv();
+  const resetToDemo = async () => {
+    try {
+      const demo = await getDemoCv();
+      setCvText(demo);
+    } catch {
+      clearCv();
+    }
   };
 
-  // Chat sender with simulated 700ms typing delay
-  const sendChatMessage = (text) => {
+  // Chat sender with real/fallback API correction
+  const sendChatMessage = async (text) => {
     if (!text.trim()) return;
 
     const userMessage = {
@@ -231,9 +253,22 @@ export function useDemoState() {
     setChatMessages(prev => [...prev, userMessage]);
     setAiTyping(true);
 
-    setTimeout(() => {
+    try {
+      const result = await correctProfile(text, skills);
+      if (result.skills && result.skills.length > 0) {
+        triggerSkillUpdate(result.skills);
+      }
+      setChatMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'ai',
+          text: result.reply || "I've updated your skills profile according to your notes.",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } catch {
       const parsed = parseChatMessage(text, skills, activePlan);
-
       if (parsed.action === 'lighten_plan') {
         setPlanIntensity('light');
       } else if (parsed.updatedSkills && parsed.updatedSkills !== skills) {
@@ -249,8 +284,9 @@ export function useDemoState() {
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
+    } finally {
       setAiTyping(false);
-    }, 700);
+    }
   };
 
   // Edit specific task in active plan
@@ -261,11 +297,11 @@ export function useDemoState() {
     }));
   };
 
-  // Save current active plan
-  const saveCurrentPlan = () => {
-    const newId = `PLAN-${Math.floor(1000 + Math.random() * 9000)}`;
+  // Save current active plan (Endpoint 13: Tool 3)
+  const saveCurrentPlan = async () => {
+    const fallbackId = `PLAN-${Math.floor(1000 + Math.random() * 9000)}`;
     const newSaved = {
-      id: newId,
+      id: fallbackId,
       opportunityId: selectedOpportunity.id,
       title: selectedOpportunity.title,
       org: selectedOpportunity.organization,
@@ -275,24 +311,44 @@ export function useDemoState() {
       tasks: activePlan.tasks
     };
 
-    setSavedPlans(prev => ({ ...prev, [newId]: newSaved }));
-    setLastSavedPlanId(newId);
-    return newId;
+    try {
+      const res = await savePlan({
+        opportunity: selectedOpportunity,
+        plan: activePlan,
+        intensity: planIntensity
+      });
+      const generatedId = res.planId || fallbackId;
+      newSaved.id = generatedId;
+      setSavedPlans(prev => ({ ...prev, [generatedId]: newSaved }));
+      setLastSavedPlanId(generatedId);
+      return generatedId;
+    } catch {
+      setSavedPlans(prev => ({ ...prev, [fallbackId]: newSaved }));
+      setLastSavedPlanId(fallbackId);
+      return fallbackId;
+    }
   };
 
-  // Toggle task in saved plan
-  const toggleSavedPlanTaskDone = (planId, day) => {
+  // Toggle task in saved plan (Endpoint 15)
+  const toggleSavedPlanTaskDone = async (planId, day) => {
+    let newStatus = false;
     setSavedPlans(prev => {
       const plan = prev[planId];
       if (!plan) return prev;
+      const target = plan.tasks.find(t => t.day === day);
+      newStatus = target ? !target.done : true;
       return {
         ...prev,
         [planId]: {
           ...plan,
-          tasks: plan.tasks.map(t => t.day === day ? { ...t, done: !t.done } : t)
+          tasks: plan.tasks.map(t => t.day === day ? { ...t, done: newStatus } : t)
         }
       };
     });
+
+    try {
+      await updateActivityStatus(planId, day, newStatus);
+    } catch {}
   };
 
   return {

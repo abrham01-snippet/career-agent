@@ -2,6 +2,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @import "./styles/tokens.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-family);
   --font-mono: var(--font-mono);
