@@ -1,0 +1,255 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+@theme {
+  --font-sans: var(--font-family);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.25s ease, color 0.2s ease;
+}
+
+/* Custom smooth transitions & animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shimmer animation for card re-rank */
+@keyframes shimmerPulse {
+  0% { background-color: rgba(99, 102, 241, 0.08); }
+  50% { background-color: rgba(99, 102, 241, 0.16); }
+  100% { background-color: transparent; }
+}
+
+.animate-shimmer {
+  animation: shimmerPulse 0.6s ease-in-out;
+}
+
+@keyframes spinOnce {
+  from {
+    transform: rotate(-45deg) scale(0.85);
+    opacity: 0.7;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-spin-once {
+  animation: spinOnce 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   NIGHT / DARK MODE HIGH-CONTRAST STYLING OVERRIDES
+   ============================================================ */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #090d16 !important;
+  color: #f8fafc !important;
+}
+
+html.dark ::selection {
+  background-color: #4338ca !important;
+  color: #ffffff !important;
+}
+
+/* Page background containers */
+html.dark .bg-\[\#F8FAFC\] {
+  background-color: #090d16 !important;
+}
+
+/* Navigation & Sticky Headers */
+html.dark nav,
+html.dark header {
+  background-color: rgba(13, 18, 30, 0.94) !important;
+  border-color: #1e293b !important;
+}
+
+/* Surface Cards & Panels */
+html.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+html.dark .bg-white\/95 {
+  background-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+html.dark .bg-white\/80 {
+  background-color: rgba(17, 24, 39, 0.85) !important;
+}
+
+html.dark .bg-white\/60 {
+  background-color: rgba(17, 24, 39, 0.65) !important;
+}
+
+/* Slate background scale */
+html.dark .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: #334155 !important;
+}
+
+/* Borders */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-b-slate-100,
+html.dark .border-b-slate-200,
+html.dark .border-t-slate-100,
+html.dark .border-t-slate-200 {
+  border-color: #1e293b !important;
+}
+
+/* Slate typography */
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* Form inputs & controls */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #0d131f !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  border-color: #6366f1 !important;
+  outline: none;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Accent tint chips & light badges */
+html.dark .bg-indigo-50 {
+  background-color: rgba(79, 70, 229, 0.16) !important;
+}
+
+html.dark .text-indigo-900,
+html.dark .text-indigo-800,
+html.dark .text-indigo-700 {
+  color: #a5b4fc !important;
+}
+
+html.dark .border-indigo-100,
+html.dark .border-indigo-200 {
+  border-color: rgba(99, 102, 241, 0.28) !important;
+}
+
+html.dark .ring-indigo-100 {
+  --tw-ring-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Emerald / Success */
+html.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+html.dark .text-emerald-900,
+html.dark .text-emerald-800,
+html.dark .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .border-emerald-200 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Amber / Warning */
+html.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+html.dark .text-amber-900,
+html.dark .text-amber-800,
+html.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+html.dark .border-amber-200 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Rose / Danger */
+html.dark .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+}
+
+html.dark .text-rose-900,
+html.dark .text-rose-800,
+html.dark .text-rose-700 {
+  color: #fda4af !important;
+}
+
+html.dark .border-rose-200 {
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+/* Modal and chat overlays */
+html.dark .bg-black\/40,
+html.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Custom shadows for dark mode elevation */
+html.dark .shadow-xs,
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-2xs {
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+html.dark .shadow-lg,
+html.dark .shadow-xl {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.6) !important;
+}
