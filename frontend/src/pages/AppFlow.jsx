@@ -13,6 +13,7 @@ import {
   ALLOWED_SKILLS,
   INITIAL_SKILLS
 } from '../data/mock.js';
+import { confirmProfile } from '../api/client.js';
 import {
   Sparkles,
   ArrowRight,
@@ -93,22 +94,30 @@ export default function AppFlow({ state }) {
   // File upload reader
   const handleFileProcess = (file) => {
     if (!file) return;
-    if (setUploadedFile) {
-      setUploadedFile({
-        name: file.name,
-        size: (file.size / 1024).toFixed(1) + ' KB',
-        type: file.type || 'Document'
-      });
-    }
 
-    const reader = new FileReader();
+    // Read as DataURL (base64) so Google Gemini can read PDFs natively
+    const b64Reader = new FileReader();
+    b64Reader.onload = (e) => {
+      if (setUploadedFile) {
+        setUploadedFile({
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'Document',
+          base64: e.target?.result
+        });
+      }
+    };
+    b64Reader.readAsDataURL(file);
+
+    // Read as text
+    const textReader = new FileReader();
     if (file.name.endsWith('.txt') || file.type.includes('text')) {
-      reader.onload = (e) => {
+      textReader.onload = (e) => {
         setCvText(e.target?.result || '');
       };
-      reader.readAsText(file);
+      textReader.readAsText(file);
     } else {
-      reader.onload = (e) => {
+      textReader.onload = (e) => {
         const raw = e.target?.result;
         if (typeof raw === 'string') {
           setCvText(raw);
@@ -125,7 +134,7 @@ export default function AppFlow({ state }) {
           setCvText(cleaned.length > 20 ? cleaned : `Resume document: ${file.name}`);
         }
       };
-      reader.readAsArrayBuffer(file);
+      textReader.readAsArrayBuffer(file);
     }
   };
 
@@ -148,15 +157,16 @@ export default function AppFlow({ state }) {
   };
 
   // Extract skills and transition to Step 2
-  const handleExtractCv = () => {
+  const handleExtractCv = async () => {
     setIsExtracting(true);
-    setTimeout(() => {
+    try {
       if (extractSkillsFromCurrentCv) {
-        extractSkillsFromCurrentCv(cvText);
+        await extractSkillsFromCurrentCv(cvText, uploadedFile?.base64);
       }
+    } finally {
       setIsExtracting(false);
       setStep(2);
-    }, 1200);
+    }
   };
 
   // Add skill submit
@@ -181,17 +191,17 @@ export default function AppFlow({ state }) {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Bar with Logo and My Plans */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs group-hover:bg-indigo-700 transition-colors">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-slate-900 leading-none block">CareerPath</span>
-              <span className="text-[10px] font-semibold uppercase text-indigo-600 tracking-wider">Guidance Only</span>
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none block">CareerPath</span>
+              <span className="text-[10px] font-semibold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Guidance Only</span>
             </div>
           </Link>
 
@@ -602,8 +612,11 @@ export default function AppFlow({ state }) {
 
                 <button
                   type="button"
-                  onClick={() => setStep(3)}
-                  className="px-6 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  onClick={() => {
+                    confirmProfile(skills);
+                    setStep(3);
+                  }}
+                  className="px-6 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
                 >
                   <span>Confirm profile and continue</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -633,6 +646,7 @@ export default function AppFlow({ state }) {
                   key={opp.id}
                   opportunity={opp}
                   rank={idx + 1}
+                  skills={skills}
                   onBuildPlan={() => {
                     setSelectedOppId(opp.id);
                     setStep(4);

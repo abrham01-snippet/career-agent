@@ -1,0 +1,17 @@
+Amina Bekele
+Final-year Business Analytics student | amina.bekele@university.edu
+
+EDUCATION
+B.Sc. in Business Analytics & Information Systems (Expected July 2025)
+Relevant Coursework: Business Statistics, Data Warehousing, Spreadsheets & Modeling, Business Communication.
+
+PROJECTS & EXPERIENCE
+Business Operations Intern - Retail Trends Ltd (Summer 2024)
+- Built advanced Excel financial models and automated monthly variance reporting for inventory tracking.
+- Wrote Python scripts (pandas, numpy) for exploratory data analysis on 35,000+ customer sales records.
+- Designed interactive Power BI dashboards to track store KPIs and presented weekly summary decks to department managers.
+- Pulled order records from the company database for analytics reports to resolve stockout issues.
+
+Academic Capstone: Predictive Delivery Optimization
+- Applied hypothesis testing and multi-variable regression analysis to evaluate warehouse fulfillment delays.
+- Delivered weekly milestone presentations to faculty advisors and corporate sponsor representatives.

@@ -1,13 +1,11 @@
 const express = require('express');
+const path = require('path');
 require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '../ai/.env') });
 const asyncHandler = require('./src/utils/asyncHandler');
 
-// Import Routes
-const matchRoutes = require('./src/routes/match');
-const planRoutes = require('./src/routes/plan');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const MOCK_AI = process.env.MOCK_AI === 'true';
 
@@ -17,45 +15,27 @@ if (NODE_ENV === 'production' && MOCK_AI) {
   process.exit(1);
 }
 
-app.use(express.json({ limit: '1mb' }));
+// Enable CORS for frontend integration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-Session-ID');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
 
-/**
- * Health check endpoint
- * Reports service status, environment, mock mode status, and uptime.
- */
-app.get('/api/health', asyncHandler(async (req, res) => {
-  let dbStatus = 'unconfigured';
+// Request logger to terminal
+app.use((req, res, next) => {
+  console.log(`[BACKEND] 📡 ${req.method} ${req.originalUrl || req.url}`);
+  next();
+});
 
-  if (process.env.DATABASE_URL) {
-    try {
-      const { Pool } = require('pg');
-      const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
-        connectionTimeoutMillis: 3000
-      });
-      await pool.query('SELECT 1');
-      await pool.end();
-      dbStatus = 'connected';
-    } catch (err) {
-      dbStatus = `error: ${err.message}`;
-    }
-  }
+app.use(express.json({ limit: '5mb' }));
 
-  res.status(200).json({
-    status: 'ok',
-    service: 'career-agent-backend',
-    environment: NODE_ENV,
-    database: dbStatus,
-    mockMode: MOCK_AI,
-    timestamp: new Date().toISOString(),
-    uptimeSeconds: Math.floor(process.uptime())
-  });
-}));
-
-// Register Feature Routes
-app.use('/api/opportunities', matchRoutes);
-app.use('/api', planRoutes);
+// Mount all 15 specification endpoints
+const allEndpoints = require('./src/routes/allEndpoints');
+app.use('/api', allEndpoints);
+app.use('/', allEndpoints);
 
 // Generic 404 handler for unmapped routes
 app.use((req, res) => {
