@@ -1,10 +1,4 @@
-/**
- * AI Internal Agent Tools
- * AI Career Development Agent
- *
- * Implements Tool 1: search_and_score_opportunities
- * Enforces bounded execution loops with hard caps preventing infinite tool calls.
- */
+
 
 const { scoreOpportunities } = require('../services/scoring');
 const { OPPORTUNITIES } = require('../data/opportunities');
