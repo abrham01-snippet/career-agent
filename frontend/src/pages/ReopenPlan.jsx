@@ -17,14 +17,17 @@ import {
 } from 'lucide-react';
 
 export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
-  const [inputPlanId, setInputPlanId] = useState('PLAN-1001');
-  const [activePlanId, setActivePlanId] = useState('PLAN-1001');
-  const [hasSearched, setHasSearched] = useState(true);
+  // Change lines 20-22 to:
+  const [inputPlanId, setInputPlanId] = useState("");
+  const [activePlanId, setActivePlanId] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fetchedRemotePlan, setFetchedRemotePlan] = useState(null);
 
   // Loaded plan object (local memory or remote API)
-  const currentPlan = (savedPlans && savedPlans[activePlanId.trim().toUpperCase()]) || fetchedRemotePlan;
+  const currentPlan =
+    (savedPlans && savedPlans[activePlanId.trim().toUpperCase()]) ||
+    fetchedRemotePlan;
 
   const handleOpen = async (e) => {
     if (e) e.preventDefault();
@@ -47,19 +50,28 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
   };
 
   // Compute tasks done
-  const activeTasks = currentPlan ? currentPlan.tasks.filter(t => !t.isRest) : [];
-  const completedTasks = currentPlan ? currentPlan.tasks.filter(t => t.done && !t.isRest) : [];
+  const activeTasks = currentPlan
+    ? currentPlan.tasks.filter((t) => !t.isRest)
+    : [];
+  const completedTasks = currentPlan
+    ? currentPlan.tasks.filter((t) => t.done && !t.isRest)
+    : [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
-          <Link to="/" className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
+          >
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs group-hover:bg-indigo-700 transition-colors">
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">CareerPath</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              CareerPath
+            </span>
           </Link>
 
           <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
@@ -82,7 +94,8 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
             Open Your Saved Plan
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Enter your plan reference ID (e.g. PLAN-1001) to view or resume your 7-day checklist.
+            Enter your plan reference ID (e.g. PLAN-1001) to view or resume your
+            7-day checklist.
           </p>
         </div>
 
@@ -110,7 +123,9 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
           {/* Quick Select Saved Plans in Memory */}
           {savedPlans && Object.keys(savedPlans).length > 0 && (
             <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
-              <span className="text-[11px] text-slate-500 font-medium">Saved plans:</span>
+              <span className="text-[11px] text-slate-500 font-medium">
+                Saved plans:
+              </span>
               {Object.keys(savedPlans).map((pid) => (
                 <button
                   key={pid}
@@ -118,8 +133,8 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                   onClick={() => handleSelectQuick(pid)}
                   className={`text-xs px-2.5 py-1 rounded-md font-mono transition-colors ${
                     activePlanId.toUpperCase() === pid
-                      ? 'bg-indigo-100 text-indigo-800 font-bold'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      ? "bg-indigo-100 text-indigo-800 font-bold"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                   }`}
                 >
                   {pid}
@@ -164,8 +179,14 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                 <button
                   type="button"
                   onClick={() => {
-                    const text = `Plan ${currentPlan.id} for ${currentPlan.title} at ${currentPlan.org}:\n` +
-                      currentPlan.tasks.map(t => `Day ${t.day}: ${t.title} [${t.done ? 'Done' : 'Not started'}]`).join('\n');
+                    const text =
+                      `Plan ${currentPlan.id} for ${currentPlan.title} at ${currentPlan.org}:\n` +
+                      currentPlan.tasks
+                        .map(
+                          (t) =>
+                            `Day ${t.day}: ${t.title} [${t.done ? "Done" : "Not started"}]`,
+                        )
+                        .join("\n");
                     navigator.clipboard.writeText(text);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
@@ -208,7 +229,10 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                       <input
                         type="checkbox"
                         checked={task.done}
-                        onChange={() => toggleTaskDone && toggleTaskDone(currentPlan.id, task.day)}
+                        onChange={() =>
+                          toggleTaskDone &&
+                          toggleTaskDone(currentPlan.id, task.day)
+                        }
                         className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
                       />
                     ) : (
@@ -219,10 +243,10 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                       <span
                         className={`leading-relaxed ${
                           task.done
-                            ? 'line-through text-slate-400 font-medium'
+                            ? "line-through text-slate-400 font-medium"
                             : task.isRest
-                            ? 'text-slate-400 font-semibold italic'
-                            : 'text-slate-800 font-medium'
+                              ? "text-slate-400 font-semibold italic"
+                              : "text-slate-800 font-medium"
                         }`}
                       >
                         Day {task.day}: {task.title}
@@ -239,18 +263,18 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                   {/* Right side: Minutes & Status Chip (Done / Not started) */}
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="font-mono text-slate-400 tabular-nums">
-                      {task.isRest ? 'Rest' : `${task.minutes}m`}
+                      {task.isRest ? "Rest" : `${task.minutes}m`}
                     </span>
 
                     {!task.isRest && (
                       <span
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                           task.done
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : "bg-slate-100 text-slate-600 border border-slate-200"
                         }`}
                       >
-                        {task.done ? 'Done' : 'Not started'}
+                        {task.done ? "Done" : "Not started"}
                       </span>
                     )}
                   </div>
@@ -266,20 +290,18 @@ export default function ReopenPlan({ savedPlans, toggleTaskDone }) {
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-sm text-slate-900">No plan found with that ID</h3>
+                <h3 className="font-bold text-sm text-slate-900">
+                  No plan found with that ID
+                </h3>
                 <p className="text-slate-500 max-w-sm mx-auto">
-                  We couldn't locate a saved plan matching "{activePlanId}". Check your plan reference ID or generate a new plan from the fit engine.
+                  We couldn't locate a saved plan matching "{activePlanId}".
+                  Check your plan reference ID or generate a new plan from the
+                  fit engine.
                 </p>
               </div>
 
               <div className="pt-2 flex justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleSelectQuick('PLAN-1001')}
-                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                >
-                  Open sample PLAN-1001
-                </button>
+              
                 <Link
                   to="/app"
                   className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors"

@@ -61,13 +61,6 @@ export default function Landing() {
             >
               FAQ
             </button>
-            <Link
-              to="/plans"
-              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5"
-            >
-              <Calendar className="w-4 h-4 text-slate-400" />
-              <span>My plans</span>
-            </Link>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
@@ -408,38 +401,101 @@ export default function Landing() {
       </main>
 
       {/* 8. Footer */}
-      <footer className="bg-white dark:bg-[#090d16] border-t border-slate-200 dark:border-slate-800 mt-12 py-8 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center text-white">
-              <Sparkles className="w-3.5 h-3.5" />
+      {/* Footer */}
+      <footer className="bg-white dark:bg-[#0b1120] border-t border-slate-200 dark:border-slate-800/80 mt-16 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Col 1: Brand & Mission */}
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <span className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  CareerPath
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+                Empowering students to analyze CVs, identify real skill gaps,
+                and follow transparent study roadmaps. 100% guidance only, runs
+                privately in your browser.
+              </p>
             </div>
-            <span className="font-bold text-slate-900 dark:text-slate-100">
-              CareerPath
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>Student guidance only. Demo data.</span>
+
+            {/* Col 2: Navigation */}
+            <div className="space-y-2.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200">
+                Navigation
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                <li>
+                  <button
+                    onClick={() => scrollToSection("how-it-works")}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  >
+                    How it works
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToSection("features")}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  >
+                    Features
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToSection("trust")}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  >
+                    Why trust us
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToSection("faq")}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  >
+                    FAQ
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Tool & Quick Start */}
+            <div className="space-y-2.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200">
+                Get Started
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                <li>
+                  <Link
+                    to="/app"
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium text-indigo-600 dark:text-indigo-400"
+                  >
+                    Analyze CV Now →
+                  </Link>
+                </li>
+                <li>
+                  <span className="text-slate-400">No account required</span>
+                </li>
+                <li>
+                  <span className="text-slate-400">In-browser simulation</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link
-              to="/"
-              className="hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Overview
-            </Link>
-            <Link
-              to="/app"
-              className="hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Fit Engine
-            </Link>
-            <Link
-              to="/plans"
-              className="hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              My Plans
-            </Link>
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+            <p>
+              © {new Date().getFullYear()} CareerPath. Built for university
+              student guidance.
+            </p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              No personal data or resume records are sent to external servers.
+            </p>
           </div>
         </div>
       </footer>
